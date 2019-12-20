@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{Close, Next, Reset, Volume};
+use crate::{Close, Next, Calculate, Reset, Volume};
 
 /// On Balance Volume (OBV).
 ///
@@ -71,10 +71,8 @@ impl OnBalanceVolume {
     }
 }
 
-impl<'a, T: Close + Volume> Next<&'a T> for OnBalanceVolume {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> f64 {
+impl<T: Close + Volume> Next<T> for OnBalanceVolume {
+    fn next(&mut self, input: &T) -> f64 {
         if input.close() > self.prev_close {
             self.obv = self.obv + input.volume();
         } else if input.close() < self.prev_close {
@@ -159,5 +157,4 @@ mod tests {
         let obv = OnBalanceVolume::new();
         assert_eq!(format!("{}", obv), "OBV");
     }
-
 }

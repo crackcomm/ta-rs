@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::errors::*;
-use crate::{Close, Next, Reset};
+use crate::{Calculate, Close, Next, Reset};
 
 /// Standard deviation (SD).
 ///
@@ -25,11 +25,11 @@ use crate::{Close, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::StandardDeviation;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut sd = StandardDeviation::new(3).unwrap();
-/// assert_eq!(sd.next(10.0), 0.0);
-/// assert_eq!(sd.next(20.0), 5.0);
+/// assert_eq!(sd.calc(10.0), 0.0);
+/// assert_eq!(sd.calc(20.0), 5.0);
 /// ```
 ///
 /// # Links
@@ -69,10 +69,8 @@ impl StandardDeviation {
     }
 }
 
-impl Next<f64> for StandardDeviation {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
+impl Calculate for StandardDeviation {
+    fn calc(&mut self, input: f64) -> f64 {
         self.index = (self.index + 1) % (self.n as usize);
 
         let old_val = self.vec[self.index];
@@ -96,11 +94,9 @@ impl Next<f64> for StandardDeviation {
     }
 }
 
-impl<'a, T: Close> Next<&'a T> for StandardDeviation {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> Self::Output {
-        self.next(input.close())
+impl<T: Close> Next<T> for StandardDeviation {
+    fn next(&mut self, input: &T) -> f64 {
+        self.calc(input.close())
     }
 }
 
@@ -144,12 +140,12 @@ mod tests {
     #[test]
     fn test_next() {
         let mut sd = StandardDeviation::new(4).unwrap();
-        assert_eq!(sd.next(10.0), 0.0);
-        assert_eq!(sd.next(20.0), 5.0);
-        assert_eq!(round(sd.next(30.0)), 8.165);
-        assert_eq!(round(sd.next(20.0)), 7.071);
-        assert_eq!(round(sd.next(10.0)), 7.071);
-        assert_eq!(round(sd.next(100.0)), 35.355);
+        assert_eq!(sd.calc(10.0), 0.0);
+        assert_eq!(sd.calc(20.0), 5.0);
+        assert_eq!(round(sd.calc(30.0)), 8.165);
+        assert_eq!(round(sd.calc(20.0)), 7.071);
+        assert_eq!(round(sd.calc(10.0)), 7.071);
+        assert_eq!(round(sd.calc(100.0)), 35.355);
     }
 
     #[test]
@@ -170,21 +166,21 @@ mod tests {
     #[test]
     fn test_next_same_values() {
         let mut sd = StandardDeviation::new(3).unwrap();
-        assert_eq!(sd.next(4.2), 0.0);
-        assert_eq!(sd.next(4.2), 0.0);
-        assert_eq!(sd.next(4.2), 0.0);
-        assert_eq!(sd.next(4.2), 0.0);
+        assert_eq!(sd.calc(4.2), 0.0);
+        assert_eq!(sd.calc(4.2), 0.0);
+        assert_eq!(sd.calc(4.2), 0.0);
+        assert_eq!(sd.calc(4.2), 0.0);
     }
 
     #[test]
     fn test_reset() {
         let mut sd = StandardDeviation::new(4).unwrap();
-        assert_eq!(sd.next(10.0), 0.0);
-        assert_eq!(sd.next(20.0), 5.0);
-        assert_eq!(round(sd.next(30.0)), 8.165);
+        assert_eq!(sd.calc(10.0), 0.0);
+        assert_eq!(sd.calc(20.0), 5.0);
+        assert_eq!(round(sd.calc(30.0)), 8.165);
 
         sd.reset();
-        assert_eq!(sd.next(20.0), 0.0);
+        assert_eq!(sd.calc(20.0), 0.0);
     }
 
     #[test]

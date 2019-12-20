@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::errors::*;
 use crate::indicators::{ExponentialMovingAverage, TrueRange};
-use crate::{Close, High, Low, Next, Reset};
+use crate::{Calculate, Close, High, Low, Next, Reset};
 
 /// Average true range (ATR).
 ///
@@ -69,19 +69,15 @@ impl AverageTrueRange {
     }
 }
 
-impl Next<f64> for AverageTrueRange {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
-        self.ema.next(self.true_range.next(input))
+impl Calculate for AverageTrueRange {
+    fn calc(&mut self, input: f64) -> f64 {
+        self.ema.calc(self.true_range.calc(input))
     }
 }
 
-impl<'a, T: High + Low + Close> Next<&'a T> for AverageTrueRange {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> Self::Output {
-        self.ema.next(self.true_range.next(input))
+impl<T: High + Low + Close> Next<T> for AverageTrueRange {
+    fn next(&mut self, input: &T) -> f64 {
+        self.ema.calc(self.true_range.next(input))
     }
 }
 

@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::errors::Result;
 use crate::indicators::{ExponentialMovingAverage, FastStochastic};
-use crate::{Close, High, Low, Next, Reset};
+use crate::{Calculate, Close, High, Low, Next, Reset};
 
 /// Slow stochastic oscillator.
 ///
@@ -17,14 +17,14 @@ use crate::{Close, High, Low, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::SlowStochastic;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut stoch = SlowStochastic::new(3, 2).unwrap();
-/// assert_eq!(stoch.next(10.0), 50.0);
-/// assert_eq!(stoch.next(50.0).round(), 83.0);
-/// assert_eq!(stoch.next(50.0).round(), 94.0);
-/// assert_eq!(stoch.next(30.0).round(), 31.0);
-/// assert_eq!(stoch.next(55.0).round(), 77.0);
+/// assert_eq!(stoch.calc(10.0), 50.0);
+/// assert_eq!(stoch.calc(50.0).round(), 83.0);
+/// assert_eq!(stoch.calc(50.0).round(), 94.0);
+/// assert_eq!(stoch.calc(30.0).round(), 31.0);
+/// assert_eq!(stoch.calc(55.0).round(), 77.0);
 /// ```
 #[derive(Clone, Debug)]
 pub struct SlowStochastic {
@@ -42,19 +42,15 @@ impl SlowStochastic {
     }
 }
 
-impl Next<f64> for SlowStochastic {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
-        self.ema.next(self.fast_stochastic.next(input))
+impl Calculate for SlowStochastic {
+    fn calc(&mut self, input: f64) -> f64 {
+        self.ema.calc(self.fast_stochastic.calc(input))
     }
 }
 
-impl<'a, T: High + Low + Close> Next<&'a T> for SlowStochastic {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> Self::Output {
-        self.ema.next(self.fast_stochastic.next(input))
+impl<T: High + Low + Close> Next<T> for SlowStochastic {
+    fn next(&mut self, input: &T) -> f64 {
+        self.ema.calc(self.fast_stochastic.next(input))
     }
 }
 
@@ -99,11 +95,11 @@ mod tests {
     #[test]
     fn test_next_with_f64() {
         let mut stoch = SlowStochastic::new(3, 2).unwrap();
-        assert_eq!(stoch.next(10.0), 50.0);
-        assert_eq!(stoch.next(50.0).round(), 83.0);
-        assert_eq!(stoch.next(50.0).round(), 94.0);
-        assert_eq!(stoch.next(30.0).round(), 31.0);
-        assert_eq!(stoch.next(55.0).round(), 77.0);
+        assert_eq!(stoch.calc(10.0), 50.0);
+        assert_eq!(stoch.calc(50.0).round(), 83.0);
+        assert_eq!(stoch.calc(50.0).round(), 94.0);
+        assert_eq!(stoch.calc(30.0).round(), 31.0);
+        assert_eq!(stoch.calc(55.0).round(), 77.0);
     }
 
     #[test]
@@ -129,12 +125,12 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut stoch = SlowStochastic::new(3, 2).unwrap();
-        assert_eq!(stoch.next(10.0), 50.0);
-        assert_eq!(stoch.next(50.0).round(), 83.0);
-        assert_eq!(stoch.next(50.0).round(), 94.0);
+        assert_eq!(stoch.calc(10.0), 50.0);
+        assert_eq!(stoch.calc(50.0).round(), 83.0);
+        assert_eq!(stoch.calc(50.0).round(), 94.0);
 
         stoch.reset();
-        assert_eq!(stoch.next(10.0), 50.0);
+        assert_eq!(stoch.calc(10.0), 50.0);
     }
 
     #[test]

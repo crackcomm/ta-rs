@@ -90,14 +90,14 @@ macro_rules! test_indicator {
             let mut indicator = $i::default();
 
             // ensure Next<f64> is implemented
-            let first_output = indicator.next(12.3);
+            let first_output = indicator.calc(12.3);
 
             // ensure next accepts &DataItem as well
             indicator.next(&bar);
 
             // ensure Reset is implemented and works correctly
             indicator.reset();
-            assert_eq!(indicator.next(12.3), first_output);
+            assert_eq!(indicator.calc(12.3), first_output);
 
             // ensure Display is implemented
             format!("{}", indicator);

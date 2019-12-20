@@ -16,8 +16,11 @@ pub trait Reset {
 /// MACD returns 3 values.
 ///
 pub trait Next<T> {
-    type Output;
-    fn next(&mut self, input: T) -> Self::Output;
+    fn next(&mut self, input: &T) -> f64;
+}
+
+pub trait Calculate {
+    fn calc(&mut self, input: f64) -> f64;
 }
 
 /// Open price of a particular period.

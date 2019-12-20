@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::helpers::max3;
-use crate::{Close, High, Low, Next, Reset};
+use crate::{Calculate, Close, High, Low, Next, Reset};
 
 /// The range of a day's trading is simply _high_ - _low_.
 /// The true range extends it to yesterday's closing price if it was outside of today's range.
@@ -70,10 +70,8 @@ impl fmt::Display for TrueRange {
     }
 }
 
-impl Next<f64> for TrueRange {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
+impl Calculate for TrueRange {
+    fn calc(&mut self, input: f64) -> f64 {
         let distance = match self.prev_close {
             Some(prev) => (input - prev).abs(),
             None => 0.0,
@@ -83,10 +81,8 @@ impl Next<f64> for TrueRange {
     }
 }
 
-impl<'a, T: High + Low + Close> Next<&'a T> for TrueRange {
-    type Output = f64;
-
-    fn next(&mut self, bar: &'a T) -> Self::Output {
+impl<T: High + Low + Close> Next<T> for TrueRange {
+    fn next(&mut self, bar: &T) -> f64 {
         let max_dist = match self.prev_close {
             Some(prev_close) => {
                 let dist1 = bar.high() - bar.low();
@@ -117,9 +113,9 @@ mod tests {
     #[test]
     fn test_next_f64() {
         let mut tr = TrueRange::new();
-        assert_eq!(round(tr.next(2.5)), 0.0);
-        assert_eq!(round(tr.next(3.6)), 1.1);
-        assert_eq!(round(tr.next(3.3)), 0.3);
+        assert_eq!(round(tr.calc(2.5)), 0.0);
+        assert_eq!(round(tr.calc(3.6)), 1.1);
+        assert_eq!(round(tr.calc(3.3)), 0.3);
     }
 
     #[test]

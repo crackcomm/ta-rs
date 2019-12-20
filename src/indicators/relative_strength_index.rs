@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::errors::*;
 use crate::indicators::ExponentialMovingAverage as Ema;
-use crate::{Close, Next, Reset};
+use crate::{Calculate, Close, Next, Reset};
 
 /// The relative strength index (RSI).
 ///
@@ -53,13 +53,13 @@ use crate::{Close, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::RelativeStrengthIndex;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut rsi = RelativeStrengthIndex::new(3).unwrap();
-/// assert_eq!(rsi.next(10.0), 50.0);
-/// assert_eq!(rsi.next(10.5).round(), 86.0);
-/// assert_eq!(rsi.next(10.0).round(), 35.0);
-/// assert_eq!(rsi.next(9.5).round(), 16.0);
+/// assert_eq!(rsi.calc(10.0), 50.0);
+/// assert_eq!(rsi.calc(10.5).round(), 86.0);
+/// assert_eq!(rsi.calc(10.0).round(), 35.0);
+/// assert_eq!(rsi.calc(9.5).round(), 16.0);
 /// ```
 ///
 /// # Links
@@ -88,10 +88,8 @@ impl RelativeStrengthIndex {
     }
 }
 
-impl Next<f64> for RelativeStrengthIndex {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
+impl Calculate for RelativeStrengthIndex {
+    fn calc(&mut self, input: f64) -> f64 {
         let mut up = 0.0;
         let mut down = 0.0;
 
@@ -109,17 +107,15 @@ impl Next<f64> for RelativeStrengthIndex {
         }
 
         self.prev_val = input;
-        let up_ema = self.up_ema_indicator.next(up);
-        let down_ema = self.down_ema_indicator.next(down);
+        let up_ema = self.up_ema_indicator.calc(up);
+        let down_ema = self.down_ema_indicator.calc(down);
         100.0 * up_ema / (up_ema + down_ema)
     }
 }
 
-impl<'a, T: Close> Next<&'a T> for RelativeStrengthIndex {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> Self::Output {
-        self.next(input.close())
+impl<T: Close> Next<T> for RelativeStrengthIndex {
+    fn next(&mut self, input: &T) -> f64 {
+        self.calc(input.close())
     }
 }
 
@@ -160,21 +156,21 @@ mod tests {
     #[test]
     fn test_next() {
         let mut rsi = RelativeStrengthIndex::new(3).unwrap();
-        assert_eq!(rsi.next(10.0), 50.0);
-        assert_eq!(rsi.next(10.5).round(), 86.0);
-        assert_eq!(rsi.next(10.0).round(), 35.0);
-        assert_eq!(rsi.next(9.5).round(), 16.0);
+        assert_eq!(rsi.calc(10.0), 50.0);
+        assert_eq!(rsi.calc(10.5).round(), 86.0);
+        assert_eq!(rsi.calc(10.0).round(), 35.0);
+        assert_eq!(rsi.calc(9.5).round(), 16.0);
     }
 
     #[test]
     fn test_reset() {
         let mut rsi = RelativeStrengthIndex::new(3).unwrap();
-        assert_eq!(rsi.next(10.0), 50.0);
-        assert_eq!(rsi.next(10.5).round(), 86.0);
+        assert_eq!(rsi.calc(10.0), 50.0);
+        assert_eq!(rsi.calc(10.5).round(), 86.0);
 
         rsi.reset();
-        assert_eq!(rsi.next(10.0).round(), 50.0);
-        assert_eq!(rsi.next(10.5).round(), 86.0);
+        assert_eq!(rsi.calc(10.0).round(), 50.0);
+        assert_eq!(rsi.calc(10.5).round(), 86.0);
     }
 
     #[test]

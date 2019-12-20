@@ -2,7 +2,7 @@ use std::f64::INFINITY;
 use std::fmt;
 
 use crate::errors::*;
-use crate::{High, Next, Reset};
+use crate::{Calculate, High, Next, Reset};
 
 /// Returns the highest value in a given time frame.
 ///
@@ -14,14 +14,14 @@ use crate::{High, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::Maximum;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut max = Maximum::new(3).unwrap();
-/// assert_eq!(max.next(7.0), 7.0);
-/// assert_eq!(max.next(5.0), 7.0);
-/// assert_eq!(max.next(4.0), 7.0);
-/// assert_eq!(max.next(4.0), 5.0);
-/// assert_eq!(max.next(8.0), 8.0);
+/// assert_eq!(max.calc(7.0), 7.0);
+/// assert_eq!(max.calc(5.0), 7.0);
+/// assert_eq!(max.calc(4.0), 7.0);
+/// assert_eq!(max.calc(4.0), 5.0);
+/// assert_eq!(max.calc(8.0), 8.0);
 /// ```
 #[derive(Debug, Clone)]
 pub struct Maximum {
@@ -63,10 +63,8 @@ impl Maximum {
     }
 }
 
-impl Next<f64> for Maximum {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
+impl Calculate for Maximum {
+    fn calc(&mut self, input: f64) -> f64 {
         self.cur_index = (self.cur_index + 1) % (self.n as usize);
         self.vec[self.cur_index] = input;
 
@@ -80,11 +78,9 @@ impl Next<f64> for Maximum {
     }
 }
 
-impl<'a, T: High> Next<&'a T> for Maximum {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> Self::Output {
-        self.next(input.high())
+impl<T: High> Next<T> for Maximum {
+    fn next(&mut self, input: &T) -> f64 {
+        self.calc(input.high())
     }
 }
 
@@ -125,15 +121,15 @@ mod tests {
     fn test_next() {
         let mut max = Maximum::new(3).unwrap();
 
-        assert_eq!(max.next(4.0), 4.0);
-        assert_eq!(max.next(1.2), 4.0);
-        assert_eq!(max.next(5.0), 5.0);
-        assert_eq!(max.next(3.0), 5.0);
-        assert_eq!(max.next(4.0), 5.0);
-        assert_eq!(max.next(0.0), 4.0);
-        assert_eq!(max.next(-1.0), 4.0);
-        assert_eq!(max.next(-2.0), 0.0);
-        assert_eq!(max.next(-1.5), -1.0);
+        assert_eq!(max.calc(4.0), 4.0);
+        assert_eq!(max.calc(1.2), 4.0);
+        assert_eq!(max.calc(5.0), 5.0);
+        assert_eq!(max.calc(3.0), 5.0);
+        assert_eq!(max.calc(4.0), 5.0);
+        assert_eq!(max.calc(0.0), 4.0);
+        assert_eq!(max.calc(-1.0), 4.0);
+        assert_eq!(max.calc(-2.0), 0.0);
+        assert_eq!(max.calc(-1.5), -1.0);
     }
 
     #[test]
@@ -153,12 +149,12 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut max = Maximum::new(100).unwrap();
-        assert_eq!(max.next(4.0), 4.0);
-        assert_eq!(max.next(10.0), 10.0);
-        assert_eq!(max.next(4.0), 10.0);
+        assert_eq!(max.calc(4.0), 4.0);
+        assert_eq!(max.calc(10.0), 10.0);
+        assert_eq!(max.calc(4.0), 10.0);
 
         max.reset();
-        assert_eq!(max.next(4.0), 4.0);
+        assert_eq!(max.calc(4.0), 4.0);
     }
 
     #[test]

@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::errors::*;
-use crate::{Close, Next, Reset};
+use crate::{Calculate, Close, Next, Reset};
 
 /// Simple moving average (SMA).
 ///
@@ -23,13 +23,13 @@ use crate::{Close, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::SimpleMovingAverage;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut sma = SimpleMovingAverage::new(3).unwrap();
-/// assert_eq!(sma.next(10.0), 10.0);
-/// assert_eq!(sma.next(11.0), 10.5);
-/// assert_eq!(sma.next(12.0), 11.0);
-/// assert_eq!(sma.next(13.0), 12.0);
+/// assert_eq!(sma.calc(10.0), 10.0);
+/// assert_eq!(sma.calc(11.0), 10.5);
+/// assert_eq!(sma.calc(12.0), 11.0);
+/// assert_eq!(sma.calc(13.0), 12.0);
 /// ```
 ///
 /// # Links
@@ -63,10 +63,8 @@ impl SimpleMovingAverage {
     }
 }
 
-impl Next<f64> for SimpleMovingAverage {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
+impl Calculate for SimpleMovingAverage {
+    fn calc(&mut self, input: f64) -> f64 {
         self.index = (self.index + 1) % (self.n as usize);
 
         let old_val = self.vec[self.index];
@@ -81,11 +79,9 @@ impl Next<f64> for SimpleMovingAverage {
     }
 }
 
-impl<'a, T: Close> Next<&'a T> for SimpleMovingAverage {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> Self::Output {
-        self.next(input.close())
+impl<T: Close> Next<T> for SimpleMovingAverage {
+    fn next(&mut self, input: &T) -> f64 {
+        self.calc(input.close())
     }
 }
 
@@ -128,13 +124,13 @@ mod tests {
     #[test]
     fn test_next() {
         let mut sma = SimpleMovingAverage::new(4).unwrap();
-        assert_eq!(sma.next(4.0), 4.0);
-        assert_eq!(sma.next(5.0), 4.5);
-        assert_eq!(sma.next(6.0), 5.0);
-        assert_eq!(sma.next(6.0), 5.25);
-        assert_eq!(sma.next(6.0), 5.75);
-        assert_eq!(sma.next(6.0), 6.0);
-        assert_eq!(sma.next(2.0), 5.0);
+        assert_eq!(sma.calc(4.0), 4.0);
+        assert_eq!(sma.calc(5.0), 4.5);
+        assert_eq!(sma.calc(6.0), 5.0);
+        assert_eq!(sma.calc(6.0), 5.25);
+        assert_eq!(sma.calc(6.0), 5.75);
+        assert_eq!(sma.calc(6.0), 6.0);
+        assert_eq!(sma.calc(2.0), 5.0);
     }
 
     #[test]
@@ -153,12 +149,12 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut sma = SimpleMovingAverage::new(4).unwrap();
-        assert_eq!(sma.next(4.0), 4.0);
-        assert_eq!(sma.next(5.0), 4.5);
-        assert_eq!(sma.next(6.0), 5.0);
+        assert_eq!(sma.calc(4.0), 4.0);
+        assert_eq!(sma.calc(5.0), 4.5);
+        assert_eq!(sma.calc(6.0), 5.0);
 
         sma.reset();
-        assert_eq!(sma.next(99.0), 99.0);
+        assert_eq!(sma.calc(99.0), 99.0);
     }
 
     #[test]

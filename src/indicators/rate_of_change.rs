@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::fmt;
 
 use crate::errors::*;
-use crate::traits::{Close, Next, Reset};
+use crate::traits::{Calculate, Close, Next, Reset};
 
 /// Rate of Change (ROC)
 ///
@@ -24,13 +24,13 @@ use crate::traits::{Close, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::RateOfChange;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut roc = RateOfChange::new(2).unwrap();
-/// assert_eq!(roc.next(10.0), 0.0);            //  0
-/// assert_eq!(roc.next(9.7).round(), -3.0);    //  (9.7 - 10) / 10  * 100 = -3
-/// assert_eq!(roc.next(20.0).round(), 100.0);  //  (20 - 10)  / 10  * 100 = 100
-/// assert_eq!(roc.next(20.0).round(), 106.0);  //  (20 - 9.7) / 9.7 * 100 = 106
+/// assert_eq!(roc.calc(10.0), 0.0);            //  0
+/// assert_eq!(roc.calc(9.7).round(), -3.0);    //  (9.7 - 10) / 10  * 100 = -3
+/// assert_eq!(roc.calc(20.0).round(), 100.0);  //  (20 - 10)  / 10  * 100 = 100
+/// assert_eq!(roc.calc(20.0).round(), 106.0);  //  (20 - 9.7) / 9.7 * 100 = 106
 /// ```
 ///
 /// # Links
@@ -58,10 +58,8 @@ impl RateOfChange {
     }
 }
 
-impl Next<f64> for RateOfChange {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> f64 {
+impl Calculate for RateOfChange {
+    fn calc(&mut self, input: f64) -> f64 {
         self.prices.push_back(input);
 
         if self.prices.len() == 1 {
@@ -80,11 +78,9 @@ impl Next<f64> for RateOfChange {
     }
 }
 
-impl<'a, T: Close> Next<&'a T> for RateOfChange {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> f64 {
-        self.next(input.close())
+impl<T: Close> Next<T> for RateOfChange {
+    fn next(&mut self, input: &T) -> f64 {
+        self.calc(input.close())
     }
 }
 
@@ -124,12 +120,12 @@ mod tests {
     fn test_next_f64() {
         let mut roc = RateOfChange::new(3).unwrap();
 
-        assert_eq!(round(roc.next(10.0)), 0.0);
-        assert_eq!(round(roc.next(10.4)), 4.0);
-        assert_eq!(round(roc.next(10.57)), 5.7);
-        assert_eq!(round(roc.next(10.8)), 8.0);
-        assert_eq!(round(roc.next(10.9)), 4.808);
-        assert_eq!(round(roc.next(10.0)), -5.393);
+        assert_eq!(round(roc.calc(10.0)), 0.0);
+        assert_eq!(round(roc.calc(10.4)), 4.0);
+        assert_eq!(round(roc.calc(10.57)), 5.7);
+        assert_eq!(round(roc.calc(10.8)), 8.0);
+        assert_eq!(round(roc.calc(10.9)), 4.808);
+        assert_eq!(round(roc.calc(10.0)), -5.393);
     }
 
     #[test]
@@ -149,13 +145,13 @@ mod tests {
     fn test_reset() {
         let mut roc = RateOfChange::new(3).unwrap();
 
-        roc.next(12.3);
-        roc.next(15.0);
+        roc.calc(12.3);
+        roc.calc(15.0);
 
         roc.reset();
 
-        assert_eq!(round(roc.next(10.0)), 0.0);
-        assert_eq!(round(roc.next(10.4)), 4.0);
-        assert_eq!(round(roc.next(10.57)), 5.7);
+        assert_eq!(round(roc.calc(10.0)), 0.0);
+        assert_eq!(round(roc.calc(10.4)), 4.0);
+        assert_eq!(round(roc.calc(10.57)), 5.7);
     }
 }

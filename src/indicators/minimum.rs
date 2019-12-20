@@ -2,7 +2,7 @@ use std::f64::INFINITY;
 use std::fmt;
 
 use crate::errors::*;
-use crate::{Low, Next, Reset};
+use crate::{Calculate, Low, Next, Reset};
 
 /// Returns the lowest value in a given time frame.
 ///
@@ -14,13 +14,13 @@ use crate::{Low, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::Minimum;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut min = Minimum::new(3).unwrap();
-/// assert_eq!(min.next(10.0), 10.0);
-/// assert_eq!(min.next(11.0), 10.0);
-/// assert_eq!(min.next(12.0), 10.0);
-/// assert_eq!(min.next(13.0), 11.0);
+/// assert_eq!(min.calc(10.0), 10.0);
+/// assert_eq!(min.calc(11.0), 10.0);
+/// assert_eq!(min.calc(12.0), 10.0);
+/// assert_eq!(min.calc(13.0), 11.0);
 /// ```
 #[derive(Debug, Clone)]
 pub struct Minimum {
@@ -63,10 +63,8 @@ impl Minimum {
     }
 }
 
-impl Next<f64> for Minimum {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> Self::Output {
+impl Calculate for Minimum {
+    fn calc(&mut self, input: f64) -> f64 {
         self.cur_index = (self.cur_index + 1) % (self.n as usize);
         self.vec[self.cur_index] = input;
 
@@ -80,11 +78,9 @@ impl Next<f64> for Minimum {
     }
 }
 
-impl<'a, T: Low> Next<&'a T> for Minimum {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> Self::Output {
-        self.next(input.low())
+impl<T: Low> Next<T> for Minimum {
+    fn next(&mut self, input: &T) -> f64 {
+        self.calc(input.low())
     }
 }
 
@@ -125,16 +121,16 @@ mod tests {
     fn test_next() {
         let mut min = Minimum::new(3).unwrap();
 
-        assert_eq!(min.next(4.0), 4.0);
-        assert_eq!(min.next(1.2), 1.2);
-        assert_eq!(min.next(5.0), 1.2);
-        assert_eq!(min.next(3.0), 1.2);
-        assert_eq!(min.next(4.0), 3.0);
-        assert_eq!(min.next(6.0), 3.0);
-        assert_eq!(min.next(7.0), 4.0);
-        assert_eq!(min.next(8.0), 6.0);
-        assert_eq!(min.next(-9.0), -9.0);
-        assert_eq!(min.next(0.0), -9.0);
+        assert_eq!(min.calc(4.0), 4.0);
+        assert_eq!(min.calc(1.2), 1.2);
+        assert_eq!(min.calc(5.0), 1.2);
+        assert_eq!(min.calc(3.0), 1.2);
+        assert_eq!(min.calc(4.0), 3.0);
+        assert_eq!(min.calc(6.0), 3.0);
+        assert_eq!(min.calc(7.0), 4.0);
+        assert_eq!(min.calc(8.0), 6.0);
+        assert_eq!(min.calc(-9.0), -9.0);
+        assert_eq!(min.calc(0.0), -9.0);
     }
 
     #[test]
@@ -155,11 +151,11 @@ mod tests {
     fn test_reset() {
         let mut min = Minimum::new(10).unwrap();
 
-        assert_eq!(min.next(5.0), 5.0);
-        assert_eq!(min.next(7.0), 5.0);
+        assert_eq!(min.calc(5.0), 5.0);
+        assert_eq!(min.calc(7.0), 5.0);
 
         min.reset();
-        assert_eq!(min.next(8.0), 8.0);
+        assert_eq!(min.calc(8.0), 8.0);
     }
 
     #[test]

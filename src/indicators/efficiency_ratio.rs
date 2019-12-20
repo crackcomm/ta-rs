@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::fmt;
 
 use crate::errors::*;
-use crate::traits::{Close, Next, Reset};
+use crate::traits::{Calculate, Close, Next, Reset};
 
 /// Kaufman's Efficiency Ratio (ER).
 ///
@@ -17,15 +17,15 @@ use crate::traits::{Close, Next, Reset};
 ///
 /// ```
 /// use ta::indicators::EfficiencyRatio;
-/// use ta::Next;
+/// use ta::{Calculate, Next};
 ///
 /// let mut er = EfficiencyRatio::new(4).unwrap();
-/// assert_eq!(er.next(10.0), 1.0);
-/// assert_eq!(er.next(13.0), 1.0);
-/// assert_eq!(er.next(12.0), 0.5);
-/// assert_eq!(er.next(13.0), 0.6);
-/// assert_eq!(er.next(18.0), 0.8);
-/// assert_eq!(er.next(19.0), 0.75);
+/// assert_eq!(er.calc(10.0), 1.0);
+/// assert_eq!(er.calc(13.0), 1.0);
+/// assert_eq!(er.calc(12.0), 0.5);
+/// assert_eq!(er.calc(13.0), 0.6);
+/// assert_eq!(er.calc(18.0), 0.8);
+/// assert_eq!(er.calc(19.0), 0.75);
 /// ```
 
 pub struct EfficiencyRatio {
@@ -47,10 +47,8 @@ impl EfficiencyRatio {
     }
 }
 
-impl Next<f64> for EfficiencyRatio {
-    type Output = f64;
-
-    fn next(&mut self, input: f64) -> f64 {
+impl Calculate for EfficiencyRatio {
+    fn calc(&mut self, input: f64) -> f64 {
         self.prices.push_back(input);
 
         if self.prices.len() <= 2 {
@@ -83,11 +81,9 @@ impl Next<f64> for EfficiencyRatio {
     }
 }
 
-impl<'a, T: Close> Next<&'a T> for EfficiencyRatio {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> f64 {
-        self.next(input.close())
+impl<T: Close> Next<T> for EfficiencyRatio {
+    fn next(&mut self, input: &T) -> f64 {
+        self.calc(input.close())
     }
 }
 
@@ -126,20 +122,20 @@ mod tests {
     fn test_next_f64() {
         let mut er = EfficiencyRatio::new(3).unwrap();
 
-        assert_eq!(round(er.next(3.0)), 1.0);
-        assert_eq!(round(er.next(5.0)), 1.0);
-        assert_eq!(round(er.next(2.0)), 0.2);
-        assert_eq!(round(er.next(3.0)), 0.0);
-        assert_eq!(round(er.next(1.0)), 0.667);
-        assert_eq!(round(er.next(3.0)), 0.2);
-        assert_eq!(round(er.next(4.0)), 0.2);
-        assert_eq!(round(er.next(6.0)), 1.0);
+        assert_eq!(round(er.calc(3.0)), 1.0);
+        assert_eq!(round(er.calc(5.0)), 1.0);
+        assert_eq!(round(er.calc(2.0)), 0.2);
+        assert_eq!(round(er.calc(3.0)), 0.0);
+        assert_eq!(round(er.calc(1.0)), 0.667);
+        assert_eq!(round(er.calc(3.0)), 0.2);
+        assert_eq!(round(er.calc(4.0)), 0.2);
+        assert_eq!(round(er.calc(6.0)), 1.0);
 
         er.reset();
-        assert_eq!(round(er.next(3.0)), 1.0);
-        assert_eq!(round(er.next(5.0)), 1.0);
-        assert_eq!(round(er.next(2.0)), 0.2);
-        assert_eq!(round(er.next(3.0)), 0.0);
+        assert_eq!(round(er.calc(3.0)), 1.0);
+        assert_eq!(round(er.calc(5.0)), 1.0);
+        assert_eq!(round(er.calc(2.0)), 0.2);
+        assert_eq!(round(er.calc(3.0)), 0.0);
     }
 
     #[test]

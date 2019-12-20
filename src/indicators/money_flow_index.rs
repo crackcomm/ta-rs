@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::fmt;
 
 use crate::errors::*;
-use crate::{Close, High, Low, Next, Reset, Volume};
+use crate::{Calculate, Close, High, Low, Next, Reset, Volume};
 
 /// Money Flow Index (MFI).
 ///
@@ -80,10 +80,8 @@ impl MoneyFlowIndex {
     }
 }
 
-impl<'a, T: High + Low + Close + Volume> Next<&'a T> for MoneyFlowIndex {
-    type Output = f64;
-
-    fn next(&mut self, input: &'a T) -> f64 {
+impl<T: High + Low + Close + Volume> Next<T> for MoneyFlowIndex {
+    fn next(&mut self, input: &T) -> f64 {
         let typical_price = (input.high() + input.low() + input.close()) / 3.0;
 
         if self.is_new {
@@ -228,5 +226,4 @@ mod tests {
         let mfi = MoneyFlowIndex::new(10).unwrap();
         assert_eq!(format!("{}", mfi), "MFI(10)");
     }
-
 }

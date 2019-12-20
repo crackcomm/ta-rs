@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::fmt;
 
 use crate::errors::*;
-use crate::{Calculate, Close, High, Low, Next, Reset, Volume};
+use crate::{Close, High, Low, Next, Reset, Volume};
 
 /// Money Flow Index (MFI).
 ///

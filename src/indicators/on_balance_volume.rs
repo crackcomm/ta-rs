@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::{Close, Next, Calculate, Reset, Volume};
+use crate::{Close, Next, Reset, Volume};
 
 /// On Balance Volume (OBV).
 ///

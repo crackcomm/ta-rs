@@ -63,10 +63,6 @@ impl StandardDeviation {
             }
         }
     }
-
-    pub(super) fn mean(&self) -> f64 {
-        self.m
-    }
 }
 
 impl Calculate for StandardDeviation {

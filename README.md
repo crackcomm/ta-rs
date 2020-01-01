@@ -1,8 +1,8 @@
 # Technical Analysis for Rust (ta)
 
-[![Build Status](https://travis-ci.org/greyblake/ta-rs.svg?branch=master)](https://travis-ci.org/greyblake/ta-rs)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/greyblake/ta-rs/master/LICENSE)
-[![Documentation](https://docs.rs/cxmr-ta-core/badge.svg)](https://docs.rs/ta)
+[![Build Status](https://travis-ci.org/crackcomm/ta-rs.svg?branch=master)](https://travis-ci.org/crackcomm/ta-rs)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/crackcomm/ta-rs/master/LICENSE)
+[![Documentation](https://docs.rs/cxmr-ta-core/badge.svg)](https://docs.rs/cxmr-ta-core)
 
 Technical analysis library for Rust.
 
@@ -18,15 +18,14 @@ Technical analysis library for Rust.
 Add to you `Cargo.toml`:
 ```
 [dependencies]
-
-ta = "0.1.5"
+cxmr-ta-core = "0.1.5"
 ```
 
 Example:
 
 ```rust
-use ta::indicators::ExponentialMovingAverage;
-use ta::Next;
+use cxmr_ta_core::indicators::ExponentialMovingAverage;
+use cxmr_ta_core::Next;
 
 // it can return an error, when an invalid length is passed (e.g. 0)
 let mut ema = ExponentialMovingAverage::new(3).unwrap();
@@ -37,8 +36,8 @@ assert_eq!(ema.next(1.0), 2.25);
 assert_eq!(ema.next(6.25), 4.25);
 ```
 
-See more in the examples [here](https://github.com/greyblake/ta-rs/tree/master/examples).
-Check also the [documentation](https://docs.rs/ta).
+See more in the examples [here](https://github.com/crackcomm/ta-rs/tree/master/examples).
+Check also the [documentation](https://docs.rs/cxmr-ta-core).
 
 ## Basic ideas
 
@@ -93,7 +92,7 @@ cargo bench
 
 ## License
 
-[MIT](https://github.com/greyblake/ta-rs/blob/master/LICENSE) © [Sergey Potapov](http://greyblake.com/)
+[MIT](https://github.com/crackcomm/ta-rs/blob/master/LICENSE) © [Sergey Potapov](http://greyblake.com/)
 
 
 ## Contributors
@@ -102,3 +101,4 @@ cargo bench
 - [Bartoshko](https://github.com/Bartoshko) - BollingerBands
 - [shreyasdeotare](https://github.com/shreyasdeotare) Shreyas Deotare - MoneyFlowIndex, OnBalanceVolume
 - [edwardycl](https://github.com/edwardycl) - StandardDeviation Implementation & More Efficient BollingerBands
+- [crackcomm](https://github.com/crackcomm) - Removing code :)

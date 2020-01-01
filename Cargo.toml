@@ -1,5 +1,5 @@
 [package]
-name = "ta"
+name = "cxmr-ta-core"
 version = "0.1.5"
 authors = ["Sergey Potapov <blake131313@gmail.com>"]
 edition = "2018"

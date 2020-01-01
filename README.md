@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/greyblake/ta-rs.svg?branch=master)](https://travis-ci.org/greyblake/ta-rs)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/greyblake/ta-rs/master/LICENSE)
-[![Documentation](https://docs.rs/ta/badge.svg)](https://docs.rs/ta)
+[![Documentation](https://docs.rs/cxmr-ta-core/badge.svg)](https://docs.rs/ta)
 
 Technical analysis library for Rust.
 
